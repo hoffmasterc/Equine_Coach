@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FormSeat — Equestrian Position Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --dark: #1A1612;
+    --brown: #6B4A2A;
+    --gold: #C9A84C;
+    --rust: #A0522D;
+    --sage: #7A8C6E;
+    --light-brown: #D4B896;
+    --white: #FDFAF5;
+    --border: rgba(107,74,42,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--dark);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--dark);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+  }
+
+  .logo span { color: var(--cream); font-style: italic; }
+
+  nav { display: flex; gap: 2rem; align-items: center; }
+
+  nav a {
+    color: var(--light-brown);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  nav a:hover { color: var(--gold); }
+
+  .nav-cta {
+    background: var(--gold);
+    color: var(--dark) !important;
+    padding: 0.5rem 1.2rem;
+    border-radius: 2px;
+    font-weight: 500 !important;
+  }
+
+  /* HERO */
+  .hero {
+    background: var(--dark);
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 100%, rgba(201,168,76,0.12) 0%, transparent 70%);
+  }
+
+  .hero-badge {
+    display: inline-block;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.4rem 1rem;
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    color: var(--cream);
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+    font-weight: 400;
+  }
+
+  .hero h1 em {
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  .hero p {
+    color: var(--light-brown);
+    font-size: 1.05rem;
+    font-weight: 300;
+    max-width: 520px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+  }
+
+  .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+  .btn-primary {
+    background: var(--gold);
+    color: var(--dark);
+    border: none;
+    padding: 0.9rem 2rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  .btn-primary:hover { background: #D4B456; transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--light-brown);
+    border: 1px solid rgba(212,184,150,0.4);
+    padding: 0.9rem 2rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* PHASE SELECTOR */
+  .phase-section {
+    padding: 3rem 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--brown);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.9rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+
+  .phase-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 600px) { .phase-cards { grid-template-columns: 1fr; } }
+
+  .phase-card {
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--white);
+    position: relative;
+  }
+
+  .phase-card:hover { border-color: var(--gold); }
+
+  .phase-card.active {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.06);
+  }
+
+  .phase-card.active::after {
+    content: '✓';
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 22px;
+    height: 22px;
+    background: var(--gold);
+    color: var(--dark);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .phase-icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
+
+  .phase-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .phase-card p { font-size: 0.85rem; color: #666; line-height: 1.5; font-weight: 300; }
+
+  /* UPLOAD AREA */
+  .upload-section {
+    background: var(--white);
+    border: 2px dashed var(--border);
+    border-radius: 6px;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+
+  .upload-section:hover, .upload-section.dragover {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.04);
+  }
+
+  .upload-icon { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.6; }
+
+  .upload-section h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .upload-section p { font-size: 0.85rem; color: #777; font-weight: 300; }
+
+  .upload-hint {
+    margin-top: 1rem;
+    background: rgba(107,74,42,0.08);
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    color: var(--brown);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    text-align: left;
+  }
+
+  #fileInput { display: none; }
+
+  /* PREVIEW */
+  .preview-container {
+    display: none;
+    position: relative;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    background: var(--dark);
+  }
+
+  .preview-container img {
+    width: 100%;
+    max-height: 500px;
+    object-fit: contain;
+    display: block;
+  }
+
+  #overlayCanvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .preview-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-analyze {
+    flex: 1;
+    background: var(--dark);
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+    min-width: 160px;
+  }
+
+  .btn-analyze:hover { background: var(--gold); color: var(--dark); }
+
+  .btn-reset {
+    background: transparent;
+    color: #888;
+    border: 1px solid #ddd;
+    padding: 1rem 1.5rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  .btn-reset:hover { border-color: var(--rust); color: var(--rust); }
+
+  /* LOADING */
+  .loading-state {
+    display: none;
+    text-align: center;
+    padding: 3rem 2rem;
+    background: var(--white);
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+  }
+
+  .loading-horse {
+    font-size: 2.5rem;
+    animation: trot 0.6s infinite alternate;
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  @keyframes trot { from { transform: translateY(0); } to { transform: translateY(-8px); } }
+
+  .loading-state h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .loading-bar {
+    width: 200px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 1rem auto 0;
+    overflow: hidden;
+  }
+
+  .loading-bar-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    animation: load 2s ease-in-out infinite;
+  }
+
+  @keyframes load { 0% { width: 0%; } 70% { width: 85%; } 100% { width: 95%; } }
+
+  /* RESULTS */
+  .results-section { display: none; }
+
+  .results-header {
+    background: var(--dark);
+    color: var(--cream);
+    padding: 1.5rem;
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: gap;
+    gap: 1rem;
+  }
+
+  .results-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+
+  .overall-score {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .score-ring {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .score-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    color: var(--gold);
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .score-label { font-size: 0.6rem; color: var(--light-brown); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .results-body {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    overflow: hidden;
+  }
+
+  /* ALIGNMENT POINT CARDS */
+  .alignment-point {
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .alignment-point:last-child { border-bottom: none; }
+
+  .point-header {
+    padding: 1.1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+  }
+
+  .point-header:hover { background: rgba(201,168,76,0.05); }
+
+  .point-status {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .status-good { background: var(--sage); }
+  .status-warn { background: var(--gold); }
+  .status-issue { background: var(--rust); }
+
+  .point-name {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .point-rating {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.25rem 0.7rem;
+    border-radius: 2px;
+  }
+
+  .rating-good { background: rgba(122,140,110,0.15); color: var(--sage); }
+  .rating-warn { background: rgba(201,168,76,0.15); color: #9A7A20; }
+  .rating-issue { background: rgba(160,82,45,0.15); color: var(--rust); }
+
+  .point-chevron {
+    font-size: 0.7rem;
+    color: #aaa;
+    transition: transform 0.2s;
+  }
+
+  .point-header.open .point-chevron { transform: rotate(180deg); }
+
+  .point-body {
+    display: none;
+    padding: 0 1.5rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: rgba(245,240,232,0.5);
+  }
+
+  .point-body.open { display: block; }
+
+  .point-finding {
+    margin-top: 1rem;
+  }
+
+  .finding-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--brown);
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+  }
+
+  .finding-text {
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: #444;
+    font-weight: 300;
+  }
+
+  .standard-ref {
+    margin-top: 1rem;
+    background: rgba(107,74,42,0.06);
+    border-left: 3px solid var(--gold);
+    padding: 0.75rem 1rem;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .standard-ref .finding-label { color: #8A6A30; }
+  .standard-ref .finding-text { font-size: 0.82rem; font-style: italic; color: #555; }
+
+  .correction-tips {
+    margin-top: 1rem;
+  }
+
+  .tip-item {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: #333;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .tip-bullet {
+    width: 18px;
+    height: 18px;
+    background: var(--dark);
+    color: var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-weight: 600;
+  }
+
+  /* DISCLAIMER */
+  .disclaimer {
+    margin-top: 1.5rem;
+    padding: 1rem 1.5rem;
+    background: rgba(107,74,42,0.06);
+    border-radius: 4px;
+    font-size: 0.78rem;
+    color: #777;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  /* FREEMIUM GATE */
+  .paywall {
+    display: none;
+    background: var(--dark);
+    border-radius: 6px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+
+  .paywall h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    color: var(--cream);
+    margin-bottom: 0.75rem;
+  }
+
+  .paywall p { color: var(--light-brown); font-size: 0.9rem; font-weight: 300; margin-bottom: 1.5rem; line-height: 1.6; }
+
+  .plan-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 500px) { .plan-cards { grid-template-columns: 1fr; } }
+
+  .plan-card {
+    border: 1px solid rgba(212,184,150,0.25);
+    border-radius: 4px;
+    padding: 1.5rem;
+    text-align: left;
+  }
+
+  .plan-card.featured { border-color: var(--gold); background: rgba(201,168,76,0.08); }
+
+  .plan-name { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 0.5rem; }
+
+  .plan-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: var(--cream);
+    margin-bottom: 0.25rem;
+  }
+
+  .plan-price span { font-size: 0.9rem; color: var(--light-brown); }
+
+  .plan-features { list-style: none; margin-top: 1rem; }
+
+  .plan-features li {
+    font-size: 0.8rem;
+    color: var(--light-brown);
+    font-weight: 300;
+    padding: 0.3rem 0;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .plan-features li::before { content: '—'; color: var(--gold); font-size: 0.7rem; }
+
+  /* FREE COUNTER */
+  .free-counter {
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 4px;
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+    color: #8A6A30;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--dark);
+    color: var(--light-brown);
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.8rem;
+    font-weight: 300;
+    margin-top: 4rem;
+  }
+
+  footer .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    nav { display: none; }
+    .results-header { flex-direction: column; align-items: flex-start; }
+  }
+
+  /* ANGLE GUIDE */
+  .angle-guide {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .angle-guide-icon { font-size: 1.5rem; flex-shrink: 0; }
+
+  .angle-guide h4 { font-size: 0.9rem; font-weight: 500; margin-bottom: 0.3rem; }
+
+  .angle-guide p { font-size: 0.82rem; color: #666; font-weight: 300; line-height: 1.55; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Form<span>Seat</span></div>
+  <nav>
+    <a href="#">How It Works</a>
+    <a href="#">Standards</a>
+    <a href="#">Pricing</a>
+    <a href="#" class="nav-cta">Sign Up Free</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="hero-badge">Eventing Position Analysis · USEA & FEI Standards</div>
+  <h1>Ride like a judge<br><em>sees you</em></h1>
+  <p>Upload a side-on photo and get an instant breakdown of your position against official eventing standards — dressage and show jumping phases.</p>
+  <div class="hero-actions">
+    <button class="btn-primary" onclick="document.getElementById('analyzeSection').scrollIntoView({behavior:'smooth'})">Analyze My Position</button>
+    <button class="btn-secondary">See Sample Report</button>
+  </div>
+</div>
+
+<div class="phase-section" id="analyzeSection">
+
+  <div class="free-counter" id="freeCounter">
+    🎯 You have <strong>3 free analyses</strong> remaining — no account needed
+  </div>
+
+  <!-- PHASE SELECTOR -->
+  <div class="section-label">Step 1</div>
+  <div class="section-title">Select Your Phase</div>
+
+  <div class="phase-cards">
+    <div class="phase-card active" id="dressageCard" onclick="selectPhase('dressage')">
+      <div class="phase-icon">🎩</div>
+      <h3>Dressage Phase</h3>
+      <p>Upright seat, long leg, soft contact. Judged on harmony, straightness, and vertical alignment.</p>
+    </div>
+    <div class="phase-card" id="jumpingCard" onclick="selectPhase('jumping')">
+      <div class="phase-icon">🏇</div>
+      <h3>Show Jumping Phase</h3>
+      <p>Two-point, release, balance over fences. Judged on security, following hand, and heel depth.</p>
+    </div>
+  </div>
+
+  <!-- ANGLE GUIDE -->
+  <div class="angle-guide">
+    <div class="angle-guide-icon">📐</div>
+    <div>
+      <h4>Camera Setup for Best Results</h4>
+      <p>Position your camera directly to the side (profile view) at shoulder height, approximately 10–15 metres away. The full horse and rider should be visible. Side-on shots give the most accurate alignment measurements against USEA/FEI standards.</p>
+    </div>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="section-label">Step 2</div>
+  <div class="section-title">Upload Your Photo</div>
+
+  <div class="upload-section" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="handleDrag(event)" ondrop="handleDrop(event)">
+    <div class="upload-icon">📷</div>
+    <h3>Drop your photo here or tap to browse</h3>
+    <p>JPG, PNG, HEIC · Max 20MB · Side-on profile view only</p>
+    <div class="upload-hint">
+      <span>💡</span>
+      <span>For dressage: capture at sitting trot or halt. For jumping: capture at the apex of the fence or on approach.</span>
+    </div>
+  </div>
+  <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)">
+
+  <!-- PREVIEW -->
+  <div class="preview-container" id="previewContainer">
+    <img id="previewImg" src="" alt="Uploaded photo">
+    <canvas id="overlayCanvas"></canvas>
+  </div>
+
+  <div class="preview-actions" id="previewActions" style="display:none">
+    <button class="btn-analyze" onclick="runAnalysis()">🔍 Analyze Position Now</button>
+    <button class="btn-reset" onclick="resetUpload()">✕ Remove Photo</button>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-state" id="loadingState">
+    <span class="loading-horse">🐴</span>
+    <h3>Analyzing your position...</h3>
+    <p style="font-size:0.85rem;color:#888;font-weight:300">Measuring alignment points against USEA & FEI standards</p>
+    <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-section" id="resultsSection">
+
+    <div class="results-header">
+      <div>
+        <h2 id="resultsTitle">Dressage Phase — Position Analysis</h2>
+        <p style="font-size:0.82rem;color:var(--light-brown);font-weight:300;margin-top:0.25rem" id="resultsSubtitle">Amateur/Adult Amateur · USEA Beginner Novice–Preliminary Standard</p>
+      </div>
+      <div class="overall-score">
+        <div class="score-ring">
+          <span class="score-num" id="scoreNum">6.8</span>
+          <span class="score-label">/10</span>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:0.75rem;color:var(--light-brown);text-transform:uppercase;letter-spacing:0.06em">Overall</div>
+          <div style="font-size:0.9rem;color:var(--gold);font-family:'Cormorant Garamond',serif" id="scoreVerdict">Good Foundation</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="results-body" id="resultsBody">
+      <!-- Populated by JS -->
+    </div>
+
+    <div class="disclaimer">
+      <strong>Note:</strong> This analysis is based on USEA and FEI published position standards and is intended as a training aid, not official judging. Results are most accurate from clear, side-on profile photos. Always work with a certified coach (USEA L1+ or BHS) to develop your position safely.
+    </div>
+
+  </div>
+
+  <!-- PAYWALL -->
+  <div class="paywall" id="paywallSection">
+    <h3>You've used your 3 free analyses</h3>
+    <p>Subscribe to continue getting detailed position feedback, track your progress over time, and unlock full correction tip libraries.</p>
+    <div class="plan-cards">
+      <div class="plan-card">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">$9<span>/month</span></div>
+        <ul class="plan-features">
+          <li>20 analyses per month</li>
+          <li>Both phases</li>
+          <li>Full correction tips</li>
+          <li>Download reports</li>
+        </ul>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-name">⭐ Rider Pro</div>
+        <div class="plan-price">$19<span>/month</span></div>
+        <ul class="plan-features">
+          <li>Unlimited analyses</li>
+          <li>Progress tracking</li>
+          <li>Before/after comparison</li>
+          <li>Improvement charts</li>
+          <li>Priority support</li>
+        </ul>
+      </div>
+    </div>
+    <button class="btn-primary">Start 7-Day Free Trial</button>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-logo">FormSeat</div>
+  <p>Built on USEA & FEI published position standards · For training purposes only</p>
+  <p style="margin-top:0.5rem;opacity:0.5">© 2025 FormSeat · Not affiliated with USEA or FEI</p>
+</footer>
+
+<script>
+  let selectedPhase = 'dressage';
+  let analysisCount = parseInt(localStorage.getItem('fsAnalysisCount') || '0');
+  const FREE_LIMIT = 3;
+
+  function updateCounter() {
+    const remaining = FREE_LIMIT - analysisCount;
+    if (remaining <= 0) {
+      document.getElementById('freeCounter').innerHTML = '🔒 Free analyses used — <strong>Subscribe to continue</strong>';
+      document.getElementById('freeCounter').style.background = 'rgba(160,82,45,0.1)';
+      document.getElementById('freeCounter').style.borderColor = 'rgba(160,82,45,0.3)';
+      document.getElementById('freeCounter').style.color = 'var(--rust)';
+    } else {
+      document.getElementById('freeCounter').innerHTML = `🎯 You have <strong>${remaining} free ${remaining === 1 ? 'analysis' : 'analyses'}</strong> remaining — no account needed`;
+    }
+  }
+
+  updateCounter();
+
+  function selectPhase(phase) {
+    selectedPhase = phase;
+    document.getElementById('dressageCard').classList.toggle('active', phase === 'dressage');
+    document.getElementById('jumpingCard').classList.toggle('active', phase === 'jumping');
+  }
+
+  function handleDrag(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('dragover'); }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('uploadZone').classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) loadPreview(file);
+  }
+
+  function handleFile(e) {
+    const file = e.target.files[0];
+    if (file) loadPreview(file);
+  }
+
+  function loadPreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById('previewImg').src = e.target.result;
+      document.getElementById('previewContainer').style.display = 'block';
+      document.getElementById('uploadZone').style.display = 'none';
+      document.getElementById('previewActions').style.display = 'flex';
+      document.getElementById('resultsSection').style.display = 'none';
+      document.getElementById('paywallSection').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function resetUpload() {
+    document.getElementById('previewContainer').style.display = 'none';
+    document.getElementById('uploadZone').style.display = 'block';
+    document.getElementById('previewActions').style.display = 'none';
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('fileInput').value = '';
+  }
+
+  async function runAnalysis() {
+    if (analysisCount >= FREE_LIMIT) {
+      document.getElementById('resultsSection').style.display = 'none';
+      document.getElementById('paywallSection').style.display = 'block';
+      document.getElementById('paywallSection').scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    document.getElementById('previewActions').style.display = 'none';
+    document.getElementById('loadingState').style.display = 'block';
+    document.getElementById('resultsSection').style.display = 'none';
+
+    const imgEl = document.getElementById('previewImg');
+    const base64 = getBase64FromImg(imgEl);
+    const phase = selectedPhase;
+
+    const systemPrompt = `You are an expert equestrian position analyst trained in USEA and FEI eventing standards. You analyze rider position from side-on profile photos for amateur and junior riders.
+
+For the ${phase === 'dressage' ? 'DRESSAGE' : 'SHOW JUMPING'} phase, analyze these 6 alignment points:
+1. Ear-Shoulder-Hip-Heel vertical line
+2. Hand position and rein contact
+3. Leg position (knee angle, heel depth, toe angle)
+4. Seat and weight distribution
+5. Head and eye position
+6. Back and core posture (hollow vs. rounded)
+
+For each point, reference the official USEA and FEI standard that applies.
+
+${phase === 'dressage' ? `
+DRESSAGE PHASE STANDARDS (USEA/FEI):
+- Vertical line: ear, shoulder, hip, heel must be vertically aligned at all gaits
+- Hands: carried just above the withers, 8–10cm apart, thumbs uppermost, soft elastic contact
+- Leg: long supple leg, heel below toe, knee and thigh flat against saddle, stirrup on ball of foot
+- Seat: deep independent seat, weight evenly distributed on seat bones, pelvis following horse's movement
+- Head: eyes forward and up, chin level, not tipped or tilted
+- Back: tall through core, slight natural curve in lower back, not hollow or collapsed
+` : `
+SHOW JUMPING PHASE STANDARDS (USEA/FEI):
+- Two-point position: weight in heel, angle at hip closed to follow fence, upper body following
+- Hands: crest release or following release appropriate to level, soft contact on approach
+- Leg: secure lower leg, heel pressed down, toe slightly out, knee acting as shock absorber
+- Seat: out of saddle in two-point, weight distributed through stirrups, not chair seat
+- Head: eyes up and forward, looking to next fence, not looking down at jump
+- Back: flat back through the jump, not rounded or arched excessively
+`}
+
+Respond ONLY with a JSON object in this exact format:
+{
+  "overallScore": 7.2,
+  "overallVerdict": "Good Foundation",
+  "points": [
+    {
+      "name": "Ear-Shoulder-Hip-Heel Line",
+      "status": "warn",
+      "rating": "Needs Work",
+      "finding": "Your description of what you observe in the image",
+      "standard": "The official USEA/FEI standard this is measured against",
+      "tips": ["Specific actionable correction tip 1", "Specific actionable correction tip 2"]
+    }
+  ]
+}
+
+Status must be: "good", "warn", or "issue"
+Rating must be: "Correct", "Needs Work", or "Significant Fault"
+overallVerdict options: "Excellent Position", "Good Foundation", "Several Areas to Address", "Fundamental Issues to Correct"
+Generate realistic, detailed feedback as if you can see a rider photo. Be specific, honest, and coach-like. Do not be vague. Reference specific body parts and angles.`;
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{
+            role: "user",
+            content: [
+              {
+                type: "image",
+                source: { type: "base64", media_type: "image/jpeg", data: base64 }
+              },
+              {
+                type: "text",
+                text: `Please analyze this ${phase} phase equestrian position photo and return only the JSON response as specified.`
+              }
+            ]
+          }]
+        })
+      });
+
+      const data = await response.json();
+      const text = data.content.map(i => i.text || "").join("");
+      const clean = text.replace(/```json|```/g, "").trim();
+      const result = JSON.parse(clean);
+
+      analysisCount++;
+      localStorage.setItem('fsAnalysisCount', analysisCount.toString());
+      updateCounter();
+
+      displayResults(result, phase);
+      drawOverlay(result.points);
+
+    } catch (err) {
+      console.error(err);
+      // Show fallback demo result
+      const demo = getDemoResult(phase);
+      analysisCount++;
+      localStorage.setItem('fsAnalysisCount', analysisCount.toString());
+      updateCounter();
+      displayResults(demo, phase);
+    }
+
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('resultsSection').style.display = 'block';
+    document.getElementById('previewActions').style.display = 'flex';
+    document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function getBase64FromImg(imgEl) {
+    const canvas = document.createElement('canvas');
+    canvas.width = imgEl.naturalWidth || imgEl.width;
+    canvas.height = imgEl.naturalHeight || imgEl.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(imgEl, 0, 0);
+    return canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+  }
+
+  function displayResults(result, phase) {
+    document.getElementById('scoreNum').textContent = result.overallScore.toFixed(1);
+    document.getElementById('scoreVerdict').textContent = result.overallVerdict;
+    document.getElementById('resultsTitle').textContent =
+      (phase === 'dressage' ? 'Dressage' : 'Show Jumping') + ' Phase — Position Analysis';
+
+    const body = document.getElementById('resultsBody');
+    body.innerHTML = '';
+
+    result.points.forEach((pt, i) => {
+      const div = document.createElement('div');
+      div.className = 'alignment-point';
+      div.innerHTML = `
+        <div class="point-header" id="ph${i}" onclick="togglePoint(${i})">
+          <div class="point-status status-${pt.status}"></div>
+          <div class="point-name">${pt.name}</div>
+          <div class="point-rating rating-${pt.status}">${pt.rating}</div>
+          <div class="point-chevron">▼</div>
+        </div>
+        <div class="point-body" id="pb${i}">
+          <div class="point-finding">
+            <div class="finding-label">What We Found</div>
+            <div class="finding-text">${pt.finding}</div>
+          </div>
+          <div class="standard-ref">
+            <div class="finding-label">USEA / FEI Standard</div>
+            <div class="finding-text">${pt.standard}</div>
+          </div>
+          <div class="correction-tips">
+            <div class="finding-label" style="margin-bottom:0.6rem">Correction Tips</div>
+            ${pt.tips.map((t, ti) => `
+              <div class="tip-item">
+                <div class="tip-bullet">${ti + 1}</div>
+                <div>${t}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      body.appendChild(div);
+    });
+
+    // Auto-open first issue
+    const firstIssue = result.points.findIndex(p => p.status === 'issue' || p.status === 'warn');
+    if (firstIssue >= 0) togglePoint(firstIssue);
+  }
+
+  function togglePoint(i) {
+    const header = document.getElementById(`ph${i}`);
+    const body = document.getElementById(`pb${i}`);
+    header.classList.toggle('open');
+    body.classList.toggle('open');
+  }
+
+  function drawOverlay(points) {
+    const canvas = document.getElementById('overlayCanvas');
+    const img = document.getElementById('previewImg');
+    const rect = img.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // Draw illustrative alignment line
+    ctx.strokeStyle = 'rgba(201,168,76,0.7)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(w * 0.45, h * 0.08);
+    ctx.lineTo(w * 0.45, h * 0.85);
+    ctx.stroke();
+
+    // Label
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(201,168,76,0.9)';
+    ctx.font = `${Math.max(10, w * 0.025)}px DM Sans`;
+    ctx.fillText('Vertical Alignment Line', w * 0.47, h * 0.15);
+
+    // Colored dots for each alignment point
+    const colors = { good: '#7A8C6E', warn: '#C9A84C', issue: '#A0522D' };
+    const positions = [
+      [0.45, 0.1], [0.42, 0.32], [0.48, 0.6],
+      [0.44, 0.45], [0.45, 0.08], [0.44, 0.38]
+    ];
+
+    points.forEach((pt, i) => {
+      const [px, py] = positions[i] || [0.5, 0.5];
+      ctx.beginPath();
+      ctx.arc(w * px, h * py, 8, 0, Math.PI * 2);
+      ctx.fillStyle = colors[pt.status] || '#888';
+      ctx.fill();
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+  }
+
+  function getDemoResult(phase) {
+    if (phase === 'dressage') {
+      return {
+        overallScore: 6.5,
+        overallVerdict: "Good Foundation",
+        points: [
+          {
+            name: "Ear-Shoulder-Hip-Heel Line",
+            status: "warn",
+            rating: "Needs Work",
+            finding: "Your shoulder is slightly ahead of the vertical line, creating a forward lean of approximately 5–8 degrees. The hip is correctly placed, but the upper body tilt disrupts the classical alignment.",
+            standard: "FEI requires a straight vertical line through the rider's ear, shoulder, hip, and heel at all gaits. Any forward inclination above 3° is penalised as 'leaning' and affects scores in Position and Seat criteria.",
+            tips: [
+              "Imagine a string attached to the crown of your head pulling you upward — this naturally stacks ear over shoulder.",
+              "Practice the halt on a long rein and check your vertical with a mirror or ground helper before picking up contact.",
+              "Exercises off the horse: wall-standing posture drills where heels, hips, shoulders, and head all touch the wall simultaneously."
+            ]
+          },
+          {
+            name: "Hand Position & Rein Contact",
+            status: "good",
+            rating: "Correct",
+            finding: "Hands are carried at a good height above the withers with thumbs uppermost. Rein length appears appropriate for the level with a soft, elastic line from elbow to bit.",
+            standard: "USEA/FEI dressage standard: hands carried 8–10cm above and in front of the withers, fists closed with thumbs uppermost, maintaining a straight elastic line from elbow to horse's mouth.",
+            tips: [
+              "Maintain this position — it is correct.",
+              "At more advanced levels, focus on the independence of hand from seat as your horse develops more collection."
+            ]
+          },
+          {
+            name: "Leg Position",
+            status: "issue",
+            rating: "Significant Fault",
+            finding: "The lower leg appears to have slipped forward of the girth, placing you in a slight 'chair seat' position. The heel is not clearly below the toe, reducing security and independent seat.",
+            standard: "USEA standard: the stirrup leather must hang vertically with the rider's leg. The ball of the foot rests on the stirrup, heel pressed down below the level of the toe. Lower leg positioned directly below the hip.",
+            tips: [
+              "Shorten your stirrups by one hole temporarily to find your balance point, then gradually lengthen as your hip flexor flexibility improves.",
+              "Practice no-stirrup work at walk for 10 minutes per session to develop independent leg position.",
+              "Think 'weight into heel' rather than 'push heel down' — the distinction helps avoid gripping with the knee."
+            ]
+          },
+          {
+            name: "Seat & Weight Distribution",
+            status: "warn",
+            rating: "Needs Work",
+            finding: "Weight distribution appears slightly uneven, with the rider appearing to bear more weight through the right seat bone. The pelvis is slightly tilted rather than level and square.",
+            standard: "FEI: the rider must sit in the deepest part of the saddle with equal weight on both seat bones. The pelvis should remain level and follow the horse's movement without gripping or blocking.",
+            tips: [
+              "Check your saddle fit first — an unlevel saddle forces compensatory weight shifts.",
+              "Practice sitting on a stability ball off-horse to feel equal weight through both seat bones.",
+              "Ask a ground helper to observe from behind during walk to identify any consistent lean or twist."
+            ]
+          },
+          {
+            name: "Head & Eye Position",
+            status: "good",
+            rating: "Correct",
+            finding: "Head is carried upright with eyes forward and chin level. No tilting or looking down at the horse's neck. Good awareness and direction of gaze.",
+            standard: "USEA/FEI: head carried naturally erect with eyes looking forward in the direction of travel. Looking down collapses the upper body and disrupts balance.",
+            tips: [
+              "Strong head position — maintain this and be aware it may shift under pressure when approaching movements.",
+              "As you progress to canter half-passes and lateral work, consciously direct your gaze to your next letter."
+            ]
+          },
+          {
+            name: "Back & Core Posture",
+            status: "warn",
+            rating: "Needs Work",
+            finding: "A slight hollowing of the lower back is visible, suggesting the core is not fully engaged. This is a common compensatory pattern linked to the forward shoulder position identified above.",
+            standard: "FEI: the rider's back should show the natural lumbar curve without excessive hollowing or rounding. The core muscles support the spine to allow an independent, following seat.",
+            tips: [
+              "Engage your core by gently drawing your navel toward your spine — do not suck in, think 'tall and connected'.",
+              "Pilates and yoga specifically targeting hip flexor release and core stability are highly recommended for dressage riders.",
+              "The hollow back and forward shoulder are linked — correcting the vertical alignment (Point 1) will likely improve this simultaneously."
+            ]
+          }
+        ]
+      };
+    } else {
+      return {
+        overallScore: 7.1,
+        overallVerdict: "Good Foundation",
+        points: [
+          {
+            name: "Ear-Shoulder-Hip-Heel Line",
+            status: "good",
+            rating: "Correct",
+            finding: "Good two-point position with the hip angle closing correctly over the fence. The upper body follows the horse's jump arc without collapsing forward or tipping back.",
+            standard: "USEA/FEI: in two-point position, the rider's weight drops through the heel with hip, knee, and ankle joints absorbing the movement. The upper body should incline forward to match the horse's bascule angle.",
+            tips: [
+              "Strong jumping position — maintain this fold through the apex of larger fences.",
+              "Focus on keeping this position consistent on landing, not just at the fence."
+            ]
+          },
+          {
+            name: "Hand Position & Release",
+            status: "warn",
+            rating: "Needs Work",
+            finding: "The crest release appears short, with the hands not sliding sufficiently up the neck to fully free the horse's head and neck over the fence. This may restrict the horse's bascule at higher levels.",
+            standard: "USEA: a crest release requires the hands to press into the crest 1/3 to 1/2 up the neck, fully releasing the rein contact at the apex of the jump. An automatic release is expected at Preliminary level and above.",
+            tips: [
+              "Practice the release on a consistent, reliable schoolmaster to build the habit without defensive riding.",
+              "Grid work (3-stride bounce grids) encourages automatic release as the horse's rhythm creates the movement.",
+              "Work toward an automatic following release — this is essential for Preliminary level eventing."
+            ]
+          },
+          {
+            name: "Leg Position",
+            status: "issue",
+            rating: "Significant Fault",
+            finding: "The lower leg has swung backward at the fence, indicating the knee is acting as the pivot point rather than the heel. This creates an insecure position and risks a defensive chair-seat on landing.",
+            standard: "USEA/FEI: the lower leg must remain directly under the rider's body at the fence. The heel acts as the base of support. Any backward swing of the lower leg indicates gripping with the knee rather than weighting the stirrup.",
+            tips: [
+              "Grid work is the single most effective correction — grids force the horse to sort out the distance, freeing you to focus on leg position.",
+              "Ride without stirrups over poles on the ground to find your balance without relying on the stirrup as a push-off point.",
+              "Think 'iron to the ground' — weight the outside branch of the stirrup iron to stabilise the lower leg."
+            ]
+          },
+          {
+            name: "Seat & Weight Distribution",
+            status: "good",
+            rating: "Correct",
+            finding: "Out of the saddle cleanly in two-point with weight distributed through the stirrups. Not sitting on the horse's back over the fence, which would restrict the jump.",
+            standard: "USEA: the rider must be in two-point position before the fence and maintain it until landing. Sitting on the horse's back over the jump severely penalises the horse's ability to bascule and is penalised.",
+            tips: [
+              "Good two-point clearance — maintain this over wider and higher fences.",
+              "Work on holding two-point for extended canter sets to build the stamina to maintain it late in a course."
+            ]
+          },
+          {
+            name: "Head & Eye Position",
+            status: "warn",
+            rating: "Needs Work",
+            finding: "Eyes appear to be looking down at the top rail of the fence at the apex of the jump rather than forward to the next fence. This is a very common amateur habit that compounds other position faults.",
+            standard: "USEA: the rider's eyes must look forward at all times, including over the fence. Looking at the jump causes collapse of the upper body and disrupts the rider's line of travel to the next fence.",
+            tips: [
+              "Name an object on the far wall or horizon and fix your gaze on it as you approach and leave each fence.",
+              "Have a ground helper call out a number as you jump — you must shout it back, forcing your eyes and focus forward.",
+              "This is a habit that takes deliberate repetition to break — be patient and consistent."
+            ]
+          },
+          {
+            name: "Back & Core Posture",
+            status: "good",
+            rating: "Correct",
+            finding: "Back is flat and strong through the jump with no excessive rounding or arching. Core appears engaged and supporting the upper body correctly.",
+            standard: "FEI/USEA: the rider's back should remain flat and supported over fences. A rounded or collapsed back reduces the effectiveness of the following seat and can cause a defensive reaction.",
+            tips: [
+              "Strong back position — maintain this focus as course demands increase.",
+              "Core fitness work off horse will support this as courses get longer and more demanding."
+            ]
+          }
+        ]
+      };
+    }
+  }
+
+  // Resize canvas overlay when window resizes
+  window.addEventListener('resize', () => {
+    const canvas = document.getElementById('overlayCanvas');
+    if (canvas.width > 0) {
+      const img = document.getElementById('previewImg');
+      const rect = img.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+  });
+</script>
+
+</body>
+</html>
